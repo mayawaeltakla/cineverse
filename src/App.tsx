@@ -8,13 +8,17 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SettingsModal from "./components/SettingsModal";
 import { Toast } from "./components/Feedback";
+import { useSettingsStore } from "./store/settings";
+import { useAuthStore } from "./store/auth";
+import { useFavoritesStore } from "./store/favorites";
+import { useHistoryStore } from "./store/history";
 import Home from "./pages/Home";
 import Discover from "./pages/Discover";
 import MovieDetails from "./pages/MovieDetails";
 import Favorites from "./pages/Favorites";
 import SearchPage from "./pages/SearchPage";
 import AuthPage from "./pages/AuthPage";
-import { useSettingsStore } from "./store/settings";
+import DatabasePage from "./pages/DatabasePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,11 +100,34 @@ function ThemeApplier() {
   return null;
 }
 
+/** فتح قاعدة البيانات، ترحيل البيانات القديمة، ومزامنة المكتبة مع الجلسة */
+function DbBootstrap() {
+  const initAuth = useAuthStore((s) => s.init);
+  const ready = useAuthStore((s) => s.ready);
+  const userId = useAuthStore((s) => s.currentUser?.id);
+  const hydrateLibrary = useFavoritesStore((s) => s.hydrate);
+  const hydrateHistory = useHistoryStore((s) => s.hydrate);
+
+  useEffect(() => {
+    void initAuth();
+  }, [initAuth]);
+
+  useEffect(() => {
+    if (ready) {
+      void hydrateLibrary();
+      void hydrateHistory();
+    }
+  }, [ready, userId, hydrateLibrary, hydrateHistory]);
+
+  return null;
+}
+
 function Shell() {
   const location = useLocation();
   return (
     <div className="film-grain relative min-h-screen">
       <ThemeApplier />
+      <DbBootstrap />
       <AmbientBackdrop />
       <Navbar />
       <main className="relative z-10">
@@ -112,6 +139,7 @@ function Shell() {
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/database" element={<DatabasePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>

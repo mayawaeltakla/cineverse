@@ -9,6 +9,7 @@ import { RowSkeleton } from "../components/Skeletons";
 import { useTrending, useTopRated, useNowPlaying, useUpcoming } from "../hooks/queries";
 import { useSettingsStore } from "../store/settings";
 import { useCurrentUser } from "../store/auth";
+import { useHistoryStore } from "../store/history";
 import { useUiStore } from "../store/ui";
 import { allGenres } from "../lib/tmdb";
 import { DEMO_MOVIES } from "../lib/demo";
@@ -33,6 +34,7 @@ export default function Home() {
   const live = liveMode && apiKey.length > 0;
   const openSettings = useUiStore((s) => s.openSettings);
   const user = useCurrentUser();
+  const watchHistory = useHistoryStore((s) => s.history);
 
   return (
     <motion.div
@@ -45,6 +47,15 @@ export default function Home() {
       <TickerMarquee movies={trending.data ?? []} live={live} userName={user?.name} />
 
       <div className="mx-auto max-w-7xl space-y-16 px-5 pt-14 md:px-8 md:pt-20">
+        {watchHistory.length > 0 && (
+          <MovieRow
+            title="واصل من حيث توقفت"
+            subtitle="آخر الأفلام التي فتحتها — محفوظة في قاعدة بياناتك المحلية"
+            accent="ember"
+            movies={watchHistory.slice(0, 14)}
+            idPrefix="hist"
+          />
+        )}
         {/* الرائج */}
         {trending.isLoading ? (
           <RowSkeleton />

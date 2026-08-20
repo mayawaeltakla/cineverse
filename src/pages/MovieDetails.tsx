@@ -19,6 +19,7 @@ import { useMovie } from "../hooks/queries";
 import { posterUrl } from "../lib/tmdb";
 import { fmtDate, fmtInt, fmtMoney, fmtRuntime } from "../lib/format";
 import { useFavoritesStore } from "../store/favorites";
+import { useHistoryStore } from "../store/history";
 import { useSettingsStore } from "../store/settings";
 import { useUiStore } from "../store/ui";
 import RatingRing from "../components/RatingRing";
@@ -36,7 +37,14 @@ export default function MovieDetails() {
   const { toggleFavorite, toggleWatchlist, isFavorite, inWatchlist } =
     useFavoritesStore();
   const showToast = useUiStore((s) => s.showToast);
+  const logVisit = useHistoryStore((s) => s.logVisit);
+  const movieId = data?.details.id;
   const [videoOpen, setVideoOpen] = useState(false);
+
+  useEffect(() => {
+    if (data) logVisit(data.details);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [movieId]);
 
   useEffect(() => {
     if (!videoOpen) return;

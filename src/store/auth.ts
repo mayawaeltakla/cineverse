@@ -1,5 +1,13 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import {
+  dbGet,
+  dbGetByIndex,
+  dbKvGet,
+  dbKvSet,
+  dbPut,
+  migrateLegacy,
+  openDb,
+} from "../lib/db";
 
 export interface User {
   id: string;
@@ -10,13 +18,14 @@ export interface User {
 }
 
 interface AuthState {
-  users: User[];
-  currentUserId: string | null;
-  /** يعيد رسالة خطأ عربية أو null عند النجاح */
+  currentUser: User | null;
+  ready: boolean;
+  /** يفتح قاعدة البيانات، يرحّل البيانات القديمة، ويستعيد الجلسة */
+  init: () => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<string | null>;
   login: (email: string, password: string) => Promise<string | null>;
   loginDemo: () => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 /** تجزئة SHA-256 عبر WebCrypto مع بديل آمن إن لم يتوفر */
@@ -35,7 +44,6 @@ async function hashSecret(secret: string): Promise<string> {
   } catch {
     /* ننتقل للبديل */
   }
-  // بديل FNV-1a مزدوج — ليس تشفيرًا حقيقيًا لكنه يمنع تخزين النص الصريح
   let h1 = 0x811c9dc5;
   let h2 = 0x01000193;
   for (let i = 0; i < input.length; i++) {
@@ -53,65 +61,92 @@ const makeId = () =>
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      users: [],
-      currentUserId: null,
+let initStarted = false;
 
-      signup: async (name, email, password) => {
-        await wait(500); // إحساس معالجة حقيقي
-        const normalized = email.trim().toLowerCase();
-        if (get().users.some((u) => u.email === normalized)) {
-          return "هذا البريد مسجّل مسبقًا — جرّب تسجيل الدخول";
-        }
-        const passHash = await hashSecret(password);
-        const user: User = {
-          id: makeId(),
-          name: name.trim(),
-          email: normalized,
-          passHash,
-          createdAt: Date.now(),
-        };
-        set((s) => ({ users: [...s.users, user], currentUserId: user.id }));
-        return null;
-      },
+export const useAuthStore = create<AuthState>()((set) => ({
+  currentUser: null,
+  ready: false,
 
-      login: async (email, password) => {
-        await wait(500);
-        const normalized = email.trim().toLowerCase();
-        const user = get().users.find((u) => u.email === normalized);
-        if (!user) return "لا يوجد حساب بهذا البريد — أنشئ حسابًا جديدًا";
-        const passHash = await hashSecret(password);
-        if (user.passHash !== passHash) return "كلمة المرور غير صحيحة";
-        set({ currentUserId: user.id });
-        return null;
-      },
+  init: async () => {
+    if (initStarted) return;
+    initStarted = true;
+    try {
+      await openDb();
+      await migrateLegacy();
+      const sid = await dbKvGet<string>("session");
+      if (sid) {
+        const user = await dbGet<User>("users", sid);
+        if (user) set({ currentUser: user });
+      }
+    } catch (e) {
+      console.warn("CineVerse: تعذّر فتح قاعدة البيانات", e);
+    } finally {
+      set({ ready: true });
+    }
+  },
 
-      loginDemo: async () => {
-        await wait(350);
-        const demoEmail = "demo@cineverse.app";
-        const existing = get().users.find((u) => u.email === demoEmail);
-        if (existing) {
-          set({ currentUserId: existing.id });
-          return;
-        }
-        const user: User = {
-          id: makeId(),
-          name: "ضيف السينما",
-          email: demoEmail,
-          passHash: await hashSecret("demo-pass"),
-          createdAt: Date.now(),
-        };
-        set((s) => ({ users: [...s.users, user], currentUserId: user.id }));
-      },
+  signup: async (name, email, password) => {
+    await wait(500);
+    const normalized = email.trim().toLowerCase();
+    const existing = await dbGetByIndex<User>("users", "by-email", normalized);
+    if (existing) return "هذا البريد مسجّل مسبقًا — جرّب تسجيل الدخول";
+    const passHash = await hashSecret(password);
+    const user: User = {
+      id: makeId(),
+      name: name.trim(),
+      email: normalized,
+      passHash,
+      createdAt: Date.now(),
+    };
+    await dbPut("users", user);
+    await dbKvSet("session", user.id);
+    set({ currentUser: user });
+    return null;
+  },
 
-      logout: () => set({ currentUserId: null }),
-    }),
-    { name: "cineverse-auth" }
-  )
-);
+  login: async (email, password) => {
+    await wait(500);
+    const normalized = email.trim().toLowerCase();
+    const user = await dbGetByIndex<User>("users", "by-email", normalized);
+    if (!user) return "لا يوجد حساب بهذا البريد — أنشئ حسابًا جديدًا";
+    const passHash = await hashSecret(password);
+    if (user.passHash !== passHash) return "كلمة المرور غير صحيحة";
+    await dbKvSet("session", user.id);
+    set({ currentUser: user });
+    return null;
+  },
+
+  loginDemo: async () => {
+    await wait(350);
+    const demoEmail = "demo@cineverse.app";
+    const existing = await dbGetByIndex<User>("users", "by-email", demoEmail);
+    if (existing) {
+      await dbKvSet("session", existing.id);
+      set({ currentUser: existing });
+      return;
+    }
+    const user: User = {
+      id: makeId(),
+      name: "ضيف السينما",
+      email: demoEmail,
+      passHash: await hashSecret("demo-pass"),
+      createdAt: Date.now(),
+    };
+    await dbPut("users", user);
+    await dbKvSet("session", user.id);
+    set({ currentUser: user });
+  },
+
+  logout: async () => {
+    await dbKvSet("session", null);
+    set({ currentUser: null });
+  },
+}));
 
 /** المستخدم الحالي — null إن لم يكن مسجّلًا */
 export const useCurrentUser = (): User | null =>
-  useAuthStore((s) => s.users.find((u) => u.id === s.currentUserId) ?? null);
+  useAuthStore((s) => s.currentUser);
+
+/** معرّف مالك البيانات: المستخدم الحالي أو «guest» */
+export const useOwnerId = (): string =>
+  useAuthStore((s) => s.currentUser?.id ?? "guest");

@@ -49,6 +49,7 @@ export default function Footer() {
             <li><Link to="/discover" className="text-cream/75 transition-colors hover:text-gold-300">استكشاف الأفلام</Link></li>
             <li><Link to="/favorites" className="text-cream/75 transition-colors hover:text-gold-300">مكتبتي</Link></li>
             <li><Link to="/search?q=نجوم" className="text-cream/75 transition-colors hover:text-gold-300">البحث</Link></li>
+            <li><Link to="/database" className="text-cream/75 transition-colors hover:text-gold-300">قاعدة البيانات</Link></li>
             {genreLinks.map((g) => (
               <li key={g.id}>
                 <Link
