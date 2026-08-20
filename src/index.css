@@ -1,1 +1,225 @@
 @import "tailwindcss";
+
+@theme {
+  --font-display: "Changa", "IBM Plex Sans Arabic", sans-serif;
+  --font-body: "IBM Plex Sans Arabic", "Changa", sans-serif;
+
+  --color-night-950: #0b0910;
+  --color-night-900: #110d18;
+  --color-night-850: #151020;
+  --color-night-800: #1a1426;
+  --color-night-700: #241b34;
+  --color-night-600: #322548;
+
+  --color-gold-200: #ffe7b0;
+  --color-gold-300: #ffd98a;
+  --color-gold-400: #f6c453;
+  --color-gold-500: #f2b33d;
+  --color-gold-600: #d99a24;
+  --color-gold-700: #a8741a;
+
+  --color-ember-300: #ffa07e;
+  --color-ember-400: #ff7a50;
+  --color-ember-500: #e4572e;
+  --color-ember-600: #c43f1b;
+
+  --color-cream: #f5edde;
+  --color-dust: #a79db8;
+
+  --color-mint-300: #8ceadb;
+  --color-mint-400: #4ed9c6;
+  --color-mint-500: #2bb8a5;
+
+  --animate-marquee: marquee 46s linear infinite;
+  --animate-marquee-fast: marquee 26s linear infinite;
+  --animate-floaty: floaty 7s ease-in-out infinite;
+  --animate-sweep: sweep 11s ease-in-out infinite;
+  --animate-blink: blink 2.4s ease-in-out infinite;
+  --animate-grain: grain 1.2s steps(4) infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes floaty {
+    0%,
+    100% {
+      transform: translateY(0) rotate(2.5deg);
+    }
+    50% {
+      transform: translateY(-14px) rotate(1deg);
+    }
+  }
+  @keyframes sweep {
+    0%,
+    100% {
+      transform: translate3d(-18%, 0, 0) rotate(8deg);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translate3d(22%, -4%, 0) rotate(8deg);
+      opacity: 0.9;
+    }
+  }
+  @keyframes blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+  @keyframes grain {
+    0% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(-2%, 3%);
+    }
+    50% {
+      transform: translate(3%, -2%);
+    }
+    75% {
+      transform: translate(-3%, -3%);
+    }
+    100% {
+      transform: translate(2%, 2%);
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-night-950);
+  color: var(--color-cream);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-gold-500);
+  color: var(--color-night-950);
+}
+
+/* شريط التمرير العام */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-night-900);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-night-600);
+  border-radius: 8px;
+  border: 2px solid var(--color-night-900);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold-700);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* حبيبات الفيلم فوق الصفحة كلها */
+.film-grain::before {
+  content: "";
+  position: fixed;
+  inset: -60%;
+  z-index: 70;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  animation: var(--animate-grain);
+}
+
+/* عنوان مفرّغ (Stroke) للأرقام الضخمة */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgb(245 237 222 / 0.28);
+}
+.text-outline-gold {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgb(242 179 61 / 0.55);
+}
+
+/* قناع تلاشٍ أفقي لصفوف البطاقات */
+.row-fade {
+  mask-image: linear-gradient(
+    to left,
+    transparent 0,
+    black 3rem,
+    black calc(100% - 3rem),
+    transparent 100%
+  );
+}
+
+/* لمعان يمر فوق البطاقة عند التحويم */
+.card-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.card-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 42%,
+    rgb(242 179 61 / 0.16) 50%,
+    transparent 58%
+  );
+  transform: translateX(160%);
+  transition: transform 0.75s ease;
+  pointer-events: none;
+}
+.card-sheen:hover::after {
+  transform: translateX(-160%);
+}
+
+.marquee-paused:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* تقليل الحركة */
+@keyframes barGrow {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+.progress-grow {
+  animation: barGrow 7s linear forwards;
+}
+.group\/hero:hover .progress-grow {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
