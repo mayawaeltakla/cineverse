@@ -1,7 +1,9 @@
-import { useEffect } from "react";
-import { HashRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
 import { AnimatePresence, MotionConfig } from "framer-motion";
+import { ArrowUp } from "lucide-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SettingsModal from "./components/SettingsModal";
@@ -61,6 +63,27 @@ function AmbientBackdrop() {
   );
 }
 
+function BackToTop() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 650);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="العودة إلى الأعلى"
+      className={`fixed bottom-6 left-5 z-40 grid h-11 w-11 place-items-center rounded-full border border-gold-500/50 bg-night-900/90 text-gold-300 shadow-[0_12px_35px_-10px_rgba(242,179,61,0.45)] backdrop-blur-md transition-all duration-300 hover:bg-gold-500 hover:text-night-950 active:scale-90 ${
+        visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
+      }`}
+    >
+      <ArrowUp size={18} />
+    </button>
+  );
+}
+
 function Shell() {
   const location = useLocation();
   return (
@@ -75,7 +98,7 @@ function Shell() {
             <Route path="/movie/:id" element={<MovieDetails />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>
       </main>
@@ -84,6 +107,7 @@ function Shell() {
       </div>
       <SettingsModal />
       <Toast />
+      <BackToTop />
     </div>
   );
 }

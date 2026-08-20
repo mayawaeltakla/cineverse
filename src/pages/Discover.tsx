@@ -92,7 +92,7 @@ export default function Discover() {
       </header>
 
       {/* شريط الفلاتر */}
-      <div className="sticky top-[105px] z-30 -mx-5 mb-8 border-y border-cream/8 bg-night-950/90 px-5 py-3 backdrop-blur-xl md:top-[72px] md:-mx-8 md:px-8">
+      <div className="sticky top-[108px] z-30 -mx-5 mb-8 border-y border-cream/8 bg-night-950/90 px-5 py-3 backdrop-blur-xl lg:top-[72px] md:-mx-8 md:px-8">
         <div className="no-scrollbar flex items-center gap-2 overflow-x-auto pb-1">
           {allGenres.map((g) => {
             const active = genres.includes(g.id);

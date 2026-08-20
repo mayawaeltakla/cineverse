@@ -86,7 +86,7 @@ export default function HeroSpotlight() {
 
   return (
     <section
-      className="group/hero relative flex min-h-[76vh] flex-col overflow-hidden"
+      className="group/hero relative flex min-h-[76vh] flex-col overflow-hidden pt-[108px] lg:pt-[72px]"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
@@ -122,8 +122,9 @@ export default function HeroSpotlight() {
           CINEVERSE <span className="text-cream/40">✦</span> NOW SHOWING
         </p>
         <p className="flex items-center gap-2 text-[10px] text-dust md:text-xs">
-          <span className="h-1.5 w-1.5 animate-blink rounded-full bg-ember-500" />
-          يُعرض الآن في السينيفرس
+          <span className="h-1.5 w-1.5 shrink-0 animate-blink rounded-full bg-ember-500" />
+          <span className="sm:hidden">الآن يُعرض</span>
+          <span className="hidden sm:inline">يُعرض الآن في السينيفرس</span>
         </p>
       </div>
 

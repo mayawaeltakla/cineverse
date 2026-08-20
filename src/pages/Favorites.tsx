@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bookmark, Heart, Popcorn } from "lucide-react";
+import { Bookmark, Heart, Popcorn, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MovieGrid } from "../components/MovieCard";
 import { useFavoritesStore } from "../store/favorites";
+import { useUiStore } from "../store/ui";
 import { fmtInt } from "../lib/format";
 
 type Tab = "favorites" | "watchlist";
@@ -24,9 +25,37 @@ function EmptyReel() {
 }
 
 export default function Favorites() {
-  const { favorites, watchlist } = useFavoritesStore();
+  const { favorites, watchlist, clearFavorites, clearWatchlist } =
+    useFavoritesStore();
+  const showToast = useUiStore((s) => s.showToast);
   const [tab, setTab] = useState<Tab>("favorites");
+  const [confirmClear, setConfirmClear] = useState(false);
   const items = tab === "favorites" ? favorites : watchlist;
+
+  // إعادة ضبط تأكيد المسح عند تبديل التبويب أو انقضاء المهلة
+  useEffect(() => {
+    setConfirmClear(false);
+  }, [tab]);
+  useEffect(() => {
+    if (!confirmClear) return;
+    const t = setTimeout(() => setConfirmClear(false), 3200);
+    return () => clearTimeout(t);
+  }, [confirmClear]);
+
+  const handleClear = () => {
+    if (!confirmClear) {
+      setConfirmClear(true);
+      return;
+    }
+    if (tab === "favorites") {
+      clearFavorites();
+      showToast("مُسحت المفضلة بالكامل");
+    } else {
+      clearWatchlist();
+      showToast("مُسحت قائمة المشاهدة بالكامل");
+    }
+    setConfirmClear(false);
+  };
 
   return (
     <motion.div
@@ -75,6 +104,28 @@ export default function Favorites() {
           </button>
         ))}
       </div>
+
+      {items.length > 0 && (
+        <div className="mb-7 flex items-center justify-between gap-3">
+          <p className="text-sm text-dust">
+            عدد الأفلام:{" "}
+            <span className="font-display font-bold text-gold-300">
+              {fmtInt(items.length)}
+            </span>
+          </p>
+          <button
+            onClick={handleClear}
+            className={`flex items-center gap-2 rounded-full border px-5 py-2 font-display text-xs font-bold transition-all active:scale-95 ${
+              confirmClear
+                ? "border-ember-500 bg-ember-500 text-cream shadow-[0_6px_22px_-6px_rgba(228,87,46,0.7)]"
+                : "border-cream/15 text-dust hover:border-ember-500/60 hover:text-ember-300"
+            }`}
+          >
+            <Trash2 size={14} />
+            {confirmClear ? "اضغط مجددًا للتأكيد" : "مسح الكل"}
+          </button>
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {items.length === 0 ? (

@@ -9,6 +9,8 @@ interface FavoritesState {
   toggleWatchlist: (movie: Movie) => void;
   removeFavorite: (id: number) => void;
   removeWatchlist: (id: number) => void;
+  clearFavorites: () => void;
+  clearWatchlist: () => void;
   isFavorite: (id: number) => boolean;
   inWatchlist: (id: number) => boolean;
 }
@@ -49,6 +51,8 @@ export const useFavoritesStore = create<FavoritesState>()(
         set((s) => ({ favorites: s.favorites.filter((f) => f.id !== id) })),
       removeWatchlist: (id) =>
         set((s) => ({ watchlist: s.watchlist.filter((f) => f.id !== id) })),
+      clearFavorites: () => set({ favorites: [] }),
+      clearWatchlist: () => set({ watchlist: [] }),
       isFavorite: (id) => get().favorites.some((f) => f.id === id),
       inWatchlist: (id) => get().watchlist.some((f) => f.id === id),
     }),
