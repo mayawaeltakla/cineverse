@@ -106,19 +106,19 @@ Screenshots
 
 Home Page
 
-!\[Home Page](./screenshots/home.png)
+![Home Page](./screenshots/home.png)
 
 
 
 Movie Details
 
-!\[Movie Details](./screenshots/details.png)
+![Movie Details](./screenshots/details.png)
 
 
 
 Dark/Light Mode
 
-!\[Dark/Light Mode](./screenshots/darklightmode.png)
+![Dark/Light Mode](./screenshots/darklightmode.png)
 
 
 
