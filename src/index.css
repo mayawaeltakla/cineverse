@@ -93,6 +93,36 @@
   }
 }
 
+/* ===== السمة: ليل / نهار ===== */
+html {
+  color-scheme: dark;
+}
+:root {
+  --ring-coin: rgba(11, 9, 16, 0.72);
+}
+
+/* وضع «الماتينيه» النهاري: قلب كل متغيرات اللوحة */
+html[data-theme="light"] {
+  color-scheme: light;
+  --color-night-950: #f4f1f6;
+  --color-night-900: #ebe7f0;
+  --color-night-850: #e2dceb;
+  --color-night-800: #d5cde0;
+  --color-night-700: #c2b7d2;
+  --color-night-600: #a798bd;
+  --color-gold-200: #5c4812;
+  --color-gold-300: #77600f;
+  --color-gold-400: #93761a;
+  --color-gold-500: #8a6a12;
+  --color-ember-300: #b5431e;
+  --color-ember-400: #a03a17;
+  --color-mint-300: #0e8172;
+  --color-mint-400: #0b6e61;
+  --color-cream: #262038;
+  --color-dust: #6f6683;
+  --ring-coin: rgba(255, 255, 255, 0.82);
+}
+
 html {
   scroll-behavior: smooth;
 }

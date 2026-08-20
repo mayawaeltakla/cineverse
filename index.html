@@ -33,6 +33,29 @@
       rel="stylesheet"
     />
     <title>سينيفرس CineVerse — عالمك السينمائي</title>
+    <script>
+      // تحديد السمة قبل تحميل React منعًا للوميض: التفضيل المحفوظ ثم تفضيل النظام
+      (function () {
+        var t = "dark";
+        try {
+          var raw = localStorage.getItem("cineverse-settings");
+          if (raw) {
+            var p = JSON.parse(raw);
+            if (p && p.state && (p.state.theme === "light" || p.state.theme === "dark")) {
+              t = p.state.theme;
+            }
+          } else if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: light)").matches
+          ) {
+            t = "light";
+          }
+        } catch (e) {}
+        document.documentElement.setAttribute("data-theme", t);
+        document.documentElement.style.backgroundColor =
+          t === "light" ? "#f4f1f6" : "#0b0910";
+      })();
+    </script>
     <style>
       html,
       body {

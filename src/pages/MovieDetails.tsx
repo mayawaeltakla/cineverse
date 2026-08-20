@@ -1,14 +1,17 @@
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Bookmark,
   BookmarkCheck,
   Clapperboard,
+  ExternalLink,
   Globe2,
   Heart,
   PlayCircle,
   User,
   Wallet,
+  X,
   TrendingUp,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
@@ -33,6 +36,16 @@ export default function MovieDetails() {
   const { toggleFavorite, toggleWatchlist, isFavorite, inWatchlist } =
     useFavoritesStore();
   const showToast = useUiStore((s) => s.showToast);
+  const [videoOpen, setVideoOpen] = useState(false);
+
+  useEffect(() => {
+    if (!videoOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setVideoOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [videoOpen]);
 
   if (isLoading) return <DetailsSkeleton />;
 
@@ -171,15 +184,13 @@ export default function MovieDetails() {
 
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 {trailer && live && (
-                  <a
-                    href={`https://www.youtube.com/watch?v=${trailer.key}`}
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    onClick={() => setVideoOpen(true)}
                     className="group flex items-center gap-2.5 rounded-full bg-ember-500 px-7 py-3 font-display text-sm font-bold text-cream shadow-[0_10px_34px_-8px_rgba(228,87,46,0.65)] transition-all hover:bg-ember-400 active:scale-95"
                   >
                     <PlayCircle size={19} className="transition-transform group-hover:scale-110" />
                     شاهد الإعلان
-                  </a>
+                  </button>
                 )}
                 <motion.button
                   whileTap={{ scale: 1.12 }}
@@ -301,6 +312,68 @@ export default function MovieDetails() {
           />
         </div>
       )}
+
+      {/* نافذة مشاهدة الإعلان */}
+      <AnimatePresence>
+        {videoOpen && trailer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(9,6,15,0.92)] p-4 backdrop-blur-sm"
+            onClick={() => setVideoOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="مشاهدة الإعلان"
+          >
+            <motion.div
+              initial={{ scale: 0.92, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 12, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-4xl overflow-hidden rounded-xl border border-cream/15 bg-night-900 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.9)]"
+            >
+              <div className="flex items-center justify-between gap-3 border-b border-cream/10 px-5 py-3">
+                <p className="flex min-w-0 items-center gap-2 font-display text-sm font-bold text-cream">
+                  <PlayCircle size={18} className="shrink-0 text-ember-400" />
+                  <span className="truncate">
+                    {trailer.name || `الإعلان الرسمي — ${d.title}`}
+                  </span>
+                </p>
+                <div className="flex shrink-0 items-center gap-2">
+                  <a
+                    href={`https://www.youtube.com/watch?v=${trailer.key}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="فتح في يوتيوب"
+                    className="rounded-full border border-cream/15 p-2 text-dust transition-colors hover:border-gold-500 hover:text-gold-300"
+                  >
+                    <ExternalLink size={14} />
+                  </a>
+                  <button
+                    onClick={() => setVideoOpen(false)}
+                    aria-label="إغلاق النافذة"
+                    className="rounded-full border border-cream/15 p-2 text-dust transition-colors hover:border-ember-400 hover:text-ember-300"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+              <div className="aspect-video w-full bg-black">
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${trailer.key}?autoplay=1&rel=0`}
+                  title={trailer.name || d.title}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

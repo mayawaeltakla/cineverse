@@ -13,6 +13,8 @@ import Discover from "./pages/Discover";
 import MovieDetails from "./pages/MovieDetails";
 import Favorites from "./pages/Favorites";
 import SearchPage from "./pages/SearchPage";
+import AuthPage from "./pages/AuthPage";
+import { useSettingsStore } from "./store/settings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -84,10 +86,21 @@ function BackToTop() {
   );
 }
 
+function ThemeApplier() {
+  const theme = useSettingsStore((s) => s.theme);
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.style.backgroundColor =
+      theme === "light" ? "#f4f1f6" : "#0b0910";
+  }, [theme]);
+  return null;
+}
+
 function Shell() {
   const location = useLocation();
   return (
     <div className="film-grain relative min-h-screen">
+      <ThemeApplier />
       <AmbientBackdrop />
       <Navbar />
       <main className="relative z-10">
@@ -98,6 +111,7 @@ function Shell() {
             <Route path="/movie/:id" element={<MovieDetails />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>

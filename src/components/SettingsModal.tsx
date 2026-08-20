@@ -76,7 +76,7 @@ export default function SettingsModal() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-night-950/80 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(9,6,15,0.82)] p-4 backdrop-blur-sm"
           onClick={closeSettings}
         >
           <motion.div
