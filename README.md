@@ -104,13 +104,21 @@ Screenshots
 
 
 
-Home Page: ./screenshots/home.png
+Home Page
 
-Movie Details: ./screenshots/details.png
-
-Darklightmode : ./screenshots/darklightmode.png
+!\[Home Page](./screenshots/home.png)
 
 
+
+Movie Details
+
+!\[Movie Details](./screenshots/details.png)
+
+
+
+Dark/Light Mode
+
+!\[Dark/Light Mode](./screenshots/darklightmode.png)
 
 
 
